@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 应用服务
+  app:
+    build: .
+    ports:
+      - "8091:8091"
+    depends_on:
+      - db
+    environment:
+      - GIN_MODE=release
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root123
+      - DB_NAME=user_management
+    volumes:
+      - ./logs:/app/logs
+      - ./view/images:/app/view/images
+    networks:
+      - app-network
+
+  # 数据库服务
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=user_management
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge

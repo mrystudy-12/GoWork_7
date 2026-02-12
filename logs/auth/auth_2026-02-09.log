@@ -1,0 +1,8 @@
+ERROR: 2026/02/09 10:24:55 login.go:34: 登录失败，用户名: lzh123, 错误: sql: Scan error on column index 5, name "avatar": converting NULL to string is unsupported
+ERROR: 2026/02/09 10:25:37 login.go:34: 登录失败，用户名: lzh123, 错误: sql: Scan error on column index 5, name "avatar": converting NULL to string is unsupported
+ERROR: 2026/02/09 10:25:50 login.go:34: 登录失败，用户名: ryh123, 错误: sql: Scan error on column index 5, name "avatar": converting NULL to string is unsupported
+INFO: 2026/02/09 10:28:12 login.go:69: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/09 10:34:06 login.go:69: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/09 10:38:54 login.go:69: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/09 11:48:20 login.go:64: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/09 12:42:21 login.go:64: 登录成功，用户名: ryh123, 用户ID: 2

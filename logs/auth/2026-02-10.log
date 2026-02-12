@@ -1,0 +1,30 @@
+INFO: 2026/02/10 08:25:47 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/10 08:25:59 auth.go:59: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 08:26:38 auth.go:59: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 08:47:41 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/10 08:55:57 login.go:54: 登录成功，用户名: wzx_123, 用户ID: 16
+INFO: 2026/02/10 14:53:22 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/10 14:54:24 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/10 14:55:01 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+ERROR: 2026/02/10 15:18:16 login.go:66: 数据库查询出错: USER_NOT_FOUND
+ERROR: 2026/02/10 15:18:16 login.go:28: 登录失败，用户名: lzh123, 错误: USER_NOT_FOUND
+INFO: 2026/02/10 15:18:24 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+ERROR: 2026/02/10 15:56:57 auth.go:48: Token解析失败: token has invalid claims: token is expired
+ERROR: 2026/02/10 16:44:00 auth.go:48: Token解析失败: token has invalid claims: token is expired
+ERROR: 2026/02/10 16:44:02 auth.go:48: Token解析失败: token has invalid claims: token is expired
+INFO: 2026/02/10 16:44:20 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/10 19:34:08 login.go:54: 登录成功，用户名: wzx_123, 用户ID: 16
+INFO: 2026/02/10 19:39:29 register.go:55: 注册成功，用户名: fcy222, 用户ID: 17
+INFO: 2026/02/10 19:39:37 login.go:54: 登录成功，用户名: fcy222, 用户ID: 17
+INFO: 2026/02/10 19:40:47 register.go:55: 注册成功，用户名: qwer123456789, 用户ID: 18
+INFO: 2026/02/10 19:40:55 login.go:54: 登录成功，用户名: qwer123456789, 用户ID: 18
+INFO: 2026/02/10 19:50:00 register.go:55: 注册成功，用户名: wangzhiwei, 用户ID: 19
+INFO: 2026/02/10 19:50:17 login.go:54: 登录成功，用户名: wangzhiwei, 用户ID: 19
+INFO: 2026/02/10 19:54:26 login.go:54: 登录成功，用户名: lzh123, 用户ID: 1
+INFO: 2026/02/10 19:55:18 auth.go:60: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 19:55:29 auth.go:60: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 19:55:33 auth.go:60: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 19:55:34 auth.go:60: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 19:55:34 auth.go:60: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 19:55:40 auth.go:60: 账号已被禁用或不存在，用户ID: 1
+INFO: 2026/02/10 19:58:20 login.go:54: 登录成功，用户名: lzh123, 用户ID: 15
