@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 // Logger 日志结构体
@@ -22,8 +21,8 @@ func NewLogger(logDir string) *Logger {
 		log.Fatalf("创建日志目录失败: %v", err)
 	}
 
-	// 创建日志文件
-	logFile := filepath.Join(logDir, fmt.Sprintf("%s.log", time.Now().Format("2006-01-02")))
+	// 创建统一的日志文件
+	logFile := filepath.Join(logDir, "app.log")
 	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatalf("打开日志文件失败: %v", err)
@@ -57,12 +56,13 @@ func (l *Logger) Debug(format string, v ...interface{}) {
 
 // 全局日志器
 var (
-	// AuthLogger 认证相关日志
-	AuthLogger = NewLogger("logs/auth")
-	// SystemLogger 系统相关日志
-	SystemLogger = NewLogger("logs/system")
-	// UserLogger 用户相关日志
-	UserLogger = NewLogger("logs/user")
+	// AppLogger 统一应用日志记录器
+	AppLogger = NewLogger("logs/app")
+
+	// 为了兼容旧代码，暂时保留这些引用，但全部指向 AppLogger
+	AuthLogger   = AppLogger
+	SystemLogger = AppLogger
+	UserLogger   = AppLogger
 )
 
 // InitLoggers 初始化日志记录器

@@ -73,18 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 构建表单数据
-        const formData = new URLSearchParams();
-        formData.append('username', usernameInput.value);
-        formData.append('password', passwordInput.value);
+        // 构建 JSON 数据
+        const registerData = {
+            username: usernameInput.value,
+            password: passwordInput.value
+        };
 
         // 发送请求到后端
         fetch('/api/register', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
             },
-            body: formData.toString()
+            body: JSON.stringify(registerData)
         })
             .then(response => response.json()) // 将后端返回的 JSON 字符串转为对象
             .then(res => {
