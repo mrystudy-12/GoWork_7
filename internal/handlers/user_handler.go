@@ -94,16 +94,25 @@ func (h *UserHandler) NewUser(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, "新建成功", map[string]interface{}{"id": lastID})
 }
 
-// PutUser 修改用户信息
+// PutUser 修改用户信息 (RESTful: PUT /api/users/{id})
 func (h *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
 	operatorRole, _ := r.Context().Value("role").(string)
 	operatorID, _ := r.Context().Value("userID").(int64)
+
+	// 从 URL 路径中获取 ID
+	idStr := r.PathValue("id")
+	targetID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "无效的用户ID")
+		return
+	}
 
 	var u models.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		utils.ErrorResponse(w, http.StatusBadRequest, "无效的请求参数")
 		return
 	}
+	u.ID = targetID // 强制使用 URL 中的 ID
 
 	targetUser, err := h.userService.GetUserByID(u.ID)
 	if err != nil {
@@ -132,7 +141,7 @@ func (h *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, "修改成功", u)
 }
 
-// DeleteUser 删除用户（仅管理员）
+// DeleteUser 删除用户 (RESTful: DELETE /api/users/{id})
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	role, _ := r.Context().Value("role").(string)
 	if role != "admin" {
@@ -140,20 +149,12 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input struct {
-		ID interface{} `json:"id"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid JSON")
+	// 从 URL 路径中获取 ID
+	idStr := r.PathValue("id")
+	finalID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "无效的用户ID")
 		return
-	}
-
-	var finalID int64
-	switch v := input.ID.(type) {
-	case string:
-		finalID, _ = strconv.ParseInt(v, 10, 64)
-	case float64:
-		finalID = int64(v)
 	}
 
 	operatorID, _ := r.Context().Value("userID").(int64)

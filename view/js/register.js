@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // 发送请求到后端
-        fetch('/api/register', {
+        fetch('/api/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

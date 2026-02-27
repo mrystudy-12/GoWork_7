@@ -84,7 +84,7 @@ async function loadUserList(page) {
             queryParams += `&status=${statusFilter}`;
         }
         // 使用 main.js 封装的 request
-        const response = await request(`/api/GetAllUsers?${queryParams}`);
+        const response = await request(`/api/users?${queryParams}`);
 
         if (!response) return; // 如果返回空，说明 request 函数内部已处理了 401/403 跳转
 
@@ -256,14 +256,16 @@ async function submitUserData() {
     // --- 3. 处理头像上传 ---
     const avatarFile = document.getElementById('userAvatar').files[0];
     if (avatarFile) {
-        const uploadResult = await uploadAvatar(avatarFile);
+        // 如果是编辑，传当前用户ID；如果是新建，使用通用上传接口
+        const uploadUrl = isEdit ? `/api/users/${userIdInput}/avatar` : '/api/uploads/avatar';
+        const uploadResult = await uploadAvatar(avatarFile, uploadUrl);
         if (uploadResult) {
             payload.avatar = uploadResult.path;
         }
     }
 
     // --- 4. 提交数据 ---
-    const url = isEdit ? '/api/PutUser' : '/api/AddUser';
+    const url = isEdit ? `/api/users/${userIdInput}` : '/api/users';
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
@@ -321,9 +323,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * 上传头像
+ * 上传头像 (RESTful: POST /api/users/{id}/avatar 或 /api/uploads/avatar)
  */
-async function uploadAvatar(file) {
+async function uploadAvatar(file, url) {
     // 验证文件格式
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
@@ -335,7 +337,7 @@ async function uploadAvatar(file) {
     formData.append('avatar', file);
     
     try {
-        const response = await fetch('/api/upload-avatar', {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -378,9 +380,8 @@ async function deleteUser(id) {
     if (!confirm(`确定要删除 ID 为 ${numericId} 的用户吗？`)) return;
 
     try {
-        const response = await request('/api/DeleteUser', {
-            method: 'DELETE',
-            body: JSON.stringify({ id: numericId })
+        const response = await request(`/api/users/${numericId}`, {
+            method: 'DELETE'
         });
 
         if (!response) return;

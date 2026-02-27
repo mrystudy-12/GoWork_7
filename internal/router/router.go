@@ -63,6 +63,8 @@ func SetupRouter() *http.ServeMux {
 	userService := service.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
+	uploadHandler := handlers.NewUploadHandler(userService)
+
 	authMiddleware := middleware.NewAuthMiddlewareProvider(userRepo)
 
 	// 1. 静态资源
@@ -73,16 +75,23 @@ func SetupRouter() *http.ServeMux {
 	// 2. 基础页面路由
 	mux.HandleFunc("/", welcome3)
 
-	// 3. 公开接口
-	mux.HandleFunc("/api/login", loginHandler.Login)
-	mux.HandleFunc("/api/register", registerHandler.Register)
+	// 3. 认证相关接口 (RESTful: /api/auth/...)
+	mux.HandleFunc("POST /api/auth/login", loginHandler.Login)
+	mux.HandleFunc("POST /api/auth/register", registerHandler.Register)
 
-	// 4. 受保护接口
-	mux.Handle("/api/GetAllUsers", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.GetAllUsers)))
-	mux.Handle("/api/AddUser", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.NewUser)))
-	mux.Handle("/api/PutUser", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.PutUser)))
-	mux.Handle("/api/DeleteUser", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.DeleteUser)))
-	mux.Handle("/api/upload-avatar", authMiddleware.AuthMiddleware(http.HandlerFunc(handlers.UploadAvatar)))
+	// 4. 用户资源接口 (RESTful: /api/users)
+	// 获取用户列表
+	mux.Handle("GET /api/users", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.GetAllUsers)))
+	// 新增用户
+	mux.Handle("POST /api/users", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.NewUser)))
+	// 修改用户 (使用路径参数 {id})
+	mux.Handle("PUT /api/users/{id}", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.PutUser)))
+	// 删除用户 (使用路径参数 {id})
+	mux.Handle("DELETE /api/users/{id}", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.DeleteUser)))
+	// 上传头像 (通用接口，支持新建用户时的临时上传)
+	mux.Handle("POST /api/uploads/avatar", authMiddleware.AuthMiddleware(http.HandlerFunc(uploadHandler.UploadAvatar)))
+	// 上传头像 (特定用户接口)
+	mux.Handle("POST /api/users/{id}/avatar", authMiddleware.AuthMiddleware(http.HandlerFunc(uploadHandler.UploadAvatar)))
 
 	return mux
 }

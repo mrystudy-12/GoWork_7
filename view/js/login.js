@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // 4. 发起异步请求到后端服务器
-            // 确保后端路由匹配 '/login'
-            const response = await fetch('/api/login', {
+            // 确保后端路由匹配 'POST /api/auth/login'
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
