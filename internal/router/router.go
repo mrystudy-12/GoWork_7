@@ -19,33 +19,13 @@ func welcome3(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, http.StatusNotFound, "API 路径不存在，请检查大小写")
 		return
 	}
-
 	// 精确匹配 HTML 页面
-	switch r.URL.Path {
-	case "/", "/login.html", "/welcome3":
-		t, err := template.ParseFiles("view/html/login.html")
-		if err != nil {
-			fmt.Println("Error parsing login.html:", err)
-			return
-		}
-		t.Execute(w, nil)
-	case "/index.html":
-		t, err := template.ParseFiles("view/html/index.html")
-		if err != nil {
-			fmt.Println("Error parsing index.html:", err)
-			return
-		}
-		t.Execute(w, nil)
-	case "/userList.html":
-		t, err := template.ParseFiles("view/html/userList.html")
-		if err != nil {
-			fmt.Println("Error parsing userList.html:", err)
-			return
-		}
-		t.Execute(w, nil)
-	default:
-		http.NotFound(w, r)
+	t, err := template.ParseFiles("view/html/login.html")
+	if err != nil {
+		fmt.Println("Error parsing login.html:", err)
+		return
 	}
+	t.Execute(w, nil)
 }
 
 func SetupRouter() *http.ServeMux {
@@ -75,11 +55,11 @@ func SetupRouter() *http.ServeMux {
 	// 2. 基础页面路由
 	mux.HandleFunc("/", welcome3)
 
-	// 3. 认证相关接口 (RESTful: /api/auth/...)
+	// 3. 认证相关接口 (Restful: /api/auth/...)
 	mux.HandleFunc("POST /api/auth/login", loginHandler.Login)
 	mux.HandleFunc("POST /api/auth/register", registerHandler.Register)
 
-	// 4. 用户资源接口 (RESTful: /api/users)
+	// 4. 用户资源接口 (Restful: /api/users)
 	// 获取用户列表
 	mux.Handle("GET /api/users", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.GetAllUsers)))
 	// 新增用户
