@@ -44,11 +44,7 @@ func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 注册成功后直接生成 token
-	token, _ := utils.GenerateToken(uid, req.Username, "common")
-
 	utils.SuccessResponse(w, "注册成功", map[string]interface{}{
 		"user_id": uid,
-		"token":   token,
 	})
 }

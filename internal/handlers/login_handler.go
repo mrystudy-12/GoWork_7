@@ -48,5 +48,6 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		"id":       user.ID,
 		"role":     user.Role,
 		"username": user.Username,
+		"avatar":   utils.FormatAvatarURL(r, user.Avatar),
 	})
 }

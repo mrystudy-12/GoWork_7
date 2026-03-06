@@ -46,20 +46,9 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 处理头像 URL 拼接
-	protocol := "http"
-	if r.TLS != nil {
-		protocol = "https"
-	}
-	host := r.Host
-	if host == "" {
-		host = "localhost:8090"
-	}
-
+	// 统一处理头像 URL 拼接
 	for i := range users {
-		if users[i].Avatar != "" {
-			users[i].Avatar = fmt.Sprintf("%s://%s/images/%s", protocol, host, users[i].Avatar)
-		}
+		users[i].Avatar = utils.FormatAvatarURL(r, users[i].Avatar)
 	}
 
 	utils.SuccessResponse(w, "查询成功", map[string]interface{}{
@@ -137,6 +126,9 @@ func (h *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "修改失败")
 		return
 	}
+
+	// 统一处理返回的头像 URL
+	u.Avatar = utils.FormatAvatarURL(r, u.Avatar)
 
 	utils.SuccessResponse(w, "修改成功", u)
 }

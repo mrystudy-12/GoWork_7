@@ -10,9 +10,3 @@ func SetCORSHeaders(w http.ResponseWriter, methods string) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.Header().Set("Access-Control-Expose-Headers", "New-Token")
 }
-
-// HandleOPTIONS 处理OPTIONS预检请求
-func HandleOPTIONS(w http.ResponseWriter) {
-	SetCORSHeaders(w, "GET, POST, PUT, DELETE, OPTIONS")
-	w.WriteHeader(http.StatusOK)
-}

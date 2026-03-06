@@ -557,8 +557,8 @@ async function updateHeaderUserInfo() {
     if (!userID) return;
 
     try {
-        // 获取用户信息
-        const response = await request('/api/GetAllUsers?page=1&limit=100');
+        // 修正 API 路径为 /api/users
+        const response = await request('/api/users?page=1&limit=100');
         if (!response) return;
 
         const result = await response.json();
@@ -573,25 +573,20 @@ async function updateHeaderUserInfo() {
                     if (currentUser.avatar) {
                         headerAvatar.src = currentUser.avatar;
                     } else {
-                        // 使用默认头像
                         headerAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=random&size=128`;
                     }
-                    // 添加鼠标悬停效果
                     headerAvatar.title = currentUser.username;
                 }
 
-                // 更新用户信息容器
+                // 更新用户信息容器 (使用更稳健的选择器)
                 const userInfoContainer = document.querySelector('header .flex.items-center.gap-2');
                 if (userInfoContainer) {
-                    // 检查是否已有用户名显示
                     let usernameElement = userInfoContainer.querySelector('.username-display');
                     if (!usernameElement) {
-                        // 创建用户名显示元素
                         usernameElement = document.createElement('span');
-                        usernameElement.className = 'username-display text-sm font-medium';
+                        usernameElement.className = 'username-display text-sm font-medium ml-2';
                         userInfoContainer.insertBefore(usernameElement, userInfoContainer.querySelector('button'));
                     }
-                    // 设置用户名
                     usernameElement.textContent = currentUser.username;
                 }
             }

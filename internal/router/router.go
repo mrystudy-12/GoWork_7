@@ -19,6 +19,7 @@ func welcome3(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, http.StatusNotFound, "API 路径不存在，请检查大小写")
 		return
 	}
+
 	// 精确匹配 HTML 页面
 	t, err := template.ParseFiles("view/html/login.html")
 	if err != nil {
@@ -28,50 +29,64 @@ func welcome3(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 }
 
-func SetupRouter() *http.ServeMux {
-	mux := http.NewServeMux()
+// Server 结构体管理所有的 Handler 和 Middleware 依赖
+type Server struct {
+	authProvider    *middleware.AuthMiddlewareProvider
+	loginHandler    *handlers.LoginHandler
+	registerHandler *handlers.RegisterHandler
+	userHandler     *handlers.UserHandler
+	uploadHandler   *handlers.UploadHandler
+}
 
-	// 初始化依赖
+// NewServer 初始化所有的依赖项并返回 Server 实例
+func NewServer() *Server {
+	// 1. 初始化仓储层和业务层依赖
 	userRepo := repository.NewUserRepository(database.DB)
-
-	loginService := service.NewLoginService(userRepo)
-	loginHandler := handlers.NewLoginHandler(loginService)
-
-	registerService := service.NewRegisterService(userRepo)
-	registerHandler := handlers.NewRegisterHandler(registerService)
-
 	userService := service.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	loginService := service.NewLoginService(userRepo)
+	registerService := service.NewRegisterService(userRepo)
 
-	uploadHandler := handlers.NewUploadHandler(userService)
+	// 2. 初始化所有的 Handler 和 Middleware Provider
+	return &Server{
+		authProvider:    middleware.NewAuthMiddlewareProvider(userRepo),
+		loginHandler:    handlers.NewLoginHandler(loginService),
+		registerHandler: handlers.NewRegisterHandler(registerService),
+		userHandler:     handlers.NewUserHandler(userService),
+		uploadHandler:   handlers.NewUploadHandler(userService),
+	}
+}
 
-	authMiddleware := middleware.NewAuthMiddlewareProvider(userRepo)
+// SetupRouter 启动路由分发器并返回包装了全局中间件的 Handler
+func SetupRouter() http.Handler {
+	s := NewServer()
+	mux := http.NewServeMux()
+	auth := s.authProvider.AuthMiddleware // 快捷引用中间件
 
-	// 1. 静态资源
+	// 1. 注册公开路由 (无需鉴权)
+	// 静态资源
 	mux.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir("view/html"))))
 	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("view/js"))))
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("view/images"))))
 
-	// 2. 基础页面路由
+	// 公开页面与接口
 	mux.HandleFunc("/", welcome3)
+	mux.HandleFunc("/login.html", welcome3)
+	mux.HandleFunc("POST /api/auth/login", s.loginHandler.Login)
+	mux.HandleFunc("POST /api/auth/register", s.registerHandler.Register)
 
-	// 3. 认证相关接口 (Restful: /api/auth/...)
-	mux.HandleFunc("POST /api/auth/login", loginHandler.Login)
-	mux.HandleFunc("POST /api/auth/register", registerHandler.Register)
+	// 2. 注册受保护路由 (统一绑定 AuthMiddleware)
+	// 受保护页面
+	mux.Handle("GET /index.html", auth(http.HandlerFunc(welcome3)))
+	mux.Handle("GET /userList.html", auth(http.HandlerFunc(welcome3)))
 
-	// 4. 用户资源接口 (Restful: /api/users)
-	// 获取用户列表
-	mux.Handle("GET /api/users", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.GetAllUsers)))
-	// 新增用户
-	mux.Handle("POST /api/users", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.NewUser)))
-	// 修改用户 (使用路径参数 {id})
-	mux.Handle("PUT /api/users/{id}", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.PutUser)))
-	// 删除用户 (使用路径参数 {id})
-	mux.Handle("DELETE /api/users/{id}", authMiddleware.AuthMiddleware(http.HandlerFunc(userHandler.DeleteUser)))
-	// 上传头像 (通用接口，支持新建用户时的临时上传)
-	mux.Handle("POST /api/uploads/avatar", authMiddleware.AuthMiddleware(http.HandlerFunc(uploadHandler.UploadAvatar)))
-	// 上传头像 (特定用户接口)
-	mux.Handle("POST /api/users/{id}/avatar", authMiddleware.AuthMiddleware(http.HandlerFunc(uploadHandler.UploadAvatar)))
+	// 用户管理接口
+	mux.Handle("GET /api/users", auth(http.HandlerFunc(s.userHandler.GetAllUsers)))
+	mux.Handle("POST /api/users", auth(http.HandlerFunc(s.userHandler.NewUser)))
+	mux.Handle("PUT /api/users/{id}", auth(http.HandlerFunc(s.userHandler.PutUser)))
+	mux.Handle("DELETE /api/users/{id}", auth(http.HandlerFunc(s.userHandler.DeleteUser)))
+	mux.Handle("POST /api/uploads/avatar", auth(http.HandlerFunc(s.uploadHandler.UploadAvatar)))
+	mux.Handle("POST /api/users/{id}/avatar", auth(http.HandlerFunc(s.uploadHandler.UploadAvatar)))
 
-	return mux
+	// 3. 应用全局系统中间件链
+	return middleware.Recover(middleware.CORS(middleware.Logging(mux)))
 }

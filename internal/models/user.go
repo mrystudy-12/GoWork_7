@@ -23,13 +23,6 @@ type RegisterRequest struct {
 	Password string `json:"password"`
 }
 
-// Response 通用响应结构体
-type Response struct {
-	Success bool                   `json:"success"`
-	Message string                 `json:"message"`
-	Data    map[string]interface{} `json:"data,omitempty"`
-}
-
 // APIResponse API 响应结构体
 type APIResponse struct {
 	Success bool        `json:"success"` // 必须添加，它是前后端的“生死线”

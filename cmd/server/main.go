@@ -9,10 +9,6 @@ import (
 	"net/http"
 )
 
-// 柔兮姐姐
-// ···，
-//美少女珠珠
-
 func main() {
 	// 初始化日志记录器
 	if err := utils.InitLoggers(); err != nil {

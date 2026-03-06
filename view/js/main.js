@@ -21,8 +21,10 @@ function initGlobalIcons() {
     }
 }
 
+
+
 /**
- * 3. 设置页面标题
+ * 4. 设置页面标题
  * @param {string} title - 页面显示的标题名称
  */
 function setPageTitle(title) {
@@ -35,22 +37,24 @@ function setPageTitle(title) {
 }
 
 /**
- * 4. 退出登录逻辑
+ * 5. 退出登录逻辑
  * 清除本地缓存并跳转至登录页
  */
 function logout() {
     if (confirm('确定要退出系统吗？')) {
         // 清除存储的 Token 或用户信息
-        localStorage.clear();
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('user_role');
         sessionStorage.clear();
 
-        // 跳转到登录页面 (根据你的路径结构调整)
-        window.location.href = '/html/login.html';
+        // 跳转到登录页面 (根据你的路由结构调整)
+        window.location.href = '/login.html';
     }
 }
 
 /**
- * 5. 通用工具函数：格式化日期
+ * 6. 通用工具函数：格式化日期
  * @param {string|Date} dateSource - 后端传来的日期字符串或对象
  * @returns {string} 格式化后的时间字符串
  */
@@ -71,7 +75,7 @@ function formatDateTime(dateSource) {
 }
 
 /**
- * 6. 通用 Fetch 请求封装
+ * 7. 通用 Fetch 请求封装
  * 自动处理：Token 携带、New-Token 更新、401 自动跳转
  */
 async function request(url, options = {}) {

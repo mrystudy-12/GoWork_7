@@ -24,8 +24,13 @@ func (p *AuthMiddlewareProvider) AuthMiddleware(next http.Handler) http.Handler 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 1. 获取 Authorization 请求头
 		authHeader := r.Header.Get("Authorization")
+
+		// 如果没有 Token 且不是 API 请求，尝试重定向到登录页
 		if authHeader == "" {
-			utils.SetCORSHeaders(w, "GET, POST, PUT, DELETE, OPTIONS")
+			if !strings.HasPrefix(r.URL.Path, "/api/") {
+				http.Redirect(w, r, "/login.html", http.StatusFound)
+				return
+			}
 			http.Error(w, "Unauthorized: No token provided", http.StatusUnauthorized)
 			return
 		}
@@ -43,7 +48,10 @@ func (p *AuthMiddlewareProvider) AuthMiddleware(next http.Handler) http.Handler 
 		// 3. 解析并校验 Token
 		claims, err := utils.ParseToken(tokenStr)
 		if err != nil {
-			utils.SetCORSHeaders(w, "GET, POST, PUT, DELETE, OPTIONS")
+			if !strings.HasPrefix(r.URL.Path, "/api/") {
+				http.Redirect(w, r, "/login.html", http.StatusFound)
+				return
+			}
 			http.Error(w, "Unauthorized: Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -51,7 +59,10 @@ func (p *AuthMiddlewareProvider) AuthMiddleware(next http.Handler) http.Handler 
 		// 4. 二次校验：检查数据库中用户状态和角色是否发生变更
 		newRole, changed, active := p.checkUserPermissionFromDB(claims.ID, claims.Role)
 		if !active {
-			utils.SetCORSHeaders(w, "GET, POST, PUT, DELETE, OPTIONS")
+			if !strings.HasPrefix(r.URL.Path, "/api/") {
+				http.Redirect(w, r, "/login.html", http.StatusFound)
+				return
+			}
 			http.Error(w, "账号已被禁用或不存在", http.StatusForbidden)
 			return
 		}
