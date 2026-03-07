@@ -28,9 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setPageTitle('用户管理');
     }
 
-    // 更新顶部导航的用户头像和用户名
-    updateHeaderUserInfo();
-
     // 初始加载第一页数据
     loadUserList(currentPage);
 
@@ -147,6 +144,16 @@ function openUserModal() {
     const roleSelect = document.getElementById('userRole');
 
     form.reset();
+    
+    // 显式清空头像预览和输入框
+    const avatarPreview = document.getElementById('avatarPreview');
+    if (avatarPreview) {
+        avatarPreview.src = '';
+        avatarPreview.classList.add('hidden');
+    }
+    const avatarInput = document.getElementById('userAvatar');
+    if (avatarInput) avatarInput.value = '';
+
     document.getElementById('userId').value = "";
 
     roleSelect.disabled = false;
@@ -198,6 +205,16 @@ async function editUser(id) {
 
 
     fillUserDataToForm(id);
+
+    // 显式清空头像预览和输入框（修改模式下默认不预览新选择的文件）
+    const avatarPreview = document.getElementById('avatarPreview');
+    if (avatarPreview) {
+        avatarPreview.src = '';
+        avatarPreview.classList.add('hidden');
+    }
+    const avatarInput = document.getElementById('userAvatar');
+    if (avatarInput) avatarInput.value = '';
+
     modal.classList.remove('hidden');
 }
 
@@ -404,7 +421,17 @@ async function deleteUser(id) {
  */
 function closeUserModal() {
     const modal = document.getElementById('userModal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        // 关闭时也清理一次头像相关状态
+        const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarPreview) {
+            avatarPreview.src = '';
+            avatarPreview.classList.add('hidden');
+        }
+        const avatarInput = document.getElementById('userAvatar');
+        if (avatarInput) avatarInput.value = '';
+    }
 }
 
 /**
@@ -527,77 +554,68 @@ function renderUserTable(users) {
 function updatePaginationUI() {
     const totalPages = Math.ceil(totalItems / pageSize) || 1;
     
-    // 更新分页信息显示
-    const startIndex = (currentPage - 1) * pageSize + 1;
+    // 1. 更新文字描述
+    const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
     const endIndex = Math.min(currentPage * pageSize, totalItems);
     
-    const startIndexElement = document.getElementById('start-index');
-    const endIndexElement = document.getElementById('end-index');
-    const totalCountElement = document.getElementById('total-count');
+    const elements = {
+        start: document.getElementById('start-index'),
+        end: document.getElementById('end-index'),
+        total: document.getElementById('total-count'),
+        pageNumbers: document.getElementById('page-numbers'),
+        prevBtn: document.getElementById('prev-btn'),
+        nextBtn: document.getElementById('next-btn')
+    };
     
-    if (startIndexElement) startIndexElement.innerText = startIndex;
-    if (endIndexElement) endIndexElement.innerText = endIndex;
-    if (totalCountElement) totalCountElement.innerText = totalItems;
+    if (elements.start) elements.start.innerText = startIndex;
+    if (elements.end) elements.end.innerText = endIndex;
+    if (elements.total) elements.total.innerText = totalItems;
+
+    // 2. 更新按钮禁用状态
+    if (elements.prevBtn) elements.prevBtn.disabled = currentPage === 1;
+    if (elements.nextBtn) elements.nextBtn.disabled = currentPage === totalPages;
+
+    // 3. 动态渲染页码
+    if (elements.pageNumbers) {
+        let pageHtml = '';
+        
+        // 生成所有页码按钮
+        for (let i = 1; i <= totalPages; i++) {
+            const isActive = i === currentPage;
+            const activeClass = isActive 
+                ? 'bg-blue-600 text-white border-blue-600' 
+                : 'border hover:bg-gray-50 text-gray-600';
+            
+            pageHtml += `
+                <button 
+                    onclick="goToPage(${i})" 
+                    class="px-3 py-1 rounded text-sm font-medium transition-colors ${activeClass}">
+                    ${i}
+                </button>`;
+        }
+        elements.pageNumbers.innerHTML = pageHtml;
+    }
+}
+
+/**
+ * 跳转到指定页码
+ */
+function goToPage(page) {
+    if (page === currentPage) return;
+    loadUserList(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function changePage(delta) {
     const totalPages = Math.ceil(totalItems / pageSize) || 1;
     const newPage = currentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) {
-        loadUserList(newPage);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        goToPage(newPage);
     }
 }
 
 /**
- * 12. 更新顶部导航用户信息
- */
-async function updateHeaderUserInfo() {
-    const userID = localStorage.getItem('user_id');
-    if (!userID) return;
-
-    try {
-        // 修正 API 路径为 /api/users
-        const response = await request('/api/users?page=1&limit=100');
-        if (!response) return;
-
-        const result = await response.json();
-        if (result.code === 200 && result.data && result.data.users) {
-            const users = result.data.users;
-            const currentUser = users.find(user => user.id === parseInt(userID, 10));
-
-            if (currentUser) {
-                // 更新头像
-                const headerAvatar = document.querySelector('header img');
-                if (headerAvatar) {
-                    if (currentUser.avatar) {
-                        headerAvatar.src = currentUser.avatar;
-                    } else {
-                        headerAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=random&size=128`;
-                    }
-                    headerAvatar.title = currentUser.username;
-                }
-
-                // 更新用户信息容器 (使用更稳健的选择器)
-                const userInfoContainer = document.querySelector('header .flex.items-center.gap-2');
-                if (userInfoContainer) {
-                    let usernameElement = userInfoContainer.querySelector('.username-display');
-                    if (!usernameElement) {
-                        usernameElement = document.createElement('span');
-                        usernameElement.className = 'username-display text-sm font-medium ml-2';
-                        userInfoContainer.insertBefore(usernameElement, userInfoContainer.querySelector('button'));
-                    }
-                    usernameElement.textContent = currentUser.username;
-                }
-            }
-        }
-    } catch (error) {
-        console.error('更新顶部导航用户信息失败:', error);
-    }
-}
-
-/**
- * 13. 退出登录
+ * 12. 退出登录
  */
 async function logout() {
     if (!confirm('确定要退出登录吗？')) return;

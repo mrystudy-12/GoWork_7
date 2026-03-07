@@ -19,6 +19,17 @@ func NewRegisterHandler(registerService *service.RegisterService) *RegisterHandl
 }
 
 // Register 处理用户注册请求
+// @Summary 用户注册
+// @Description 用户提交用户名和密码进行注册
+// @Tags 认证
+// @Accept  json
+// @Produce  json
+// @Param   request  body      models.LoginRequest  true  "注册请求参数"
+// @Success 200 {object} models.APIResponse{data=map[string]interface{}} "注册成功"
+// @Failure 400 {object} models.APIResponse "无效的请求参数"
+// @Failure 405 {object} models.APIResponse "方法不允许"
+// @Failure 500 {object} models.APIResponse "注册失败"
+// @Router /auth/register [post]
 func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != http.MethodPost {

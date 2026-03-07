@@ -12,7 +12,7 @@ var (
 )
 
 func ConnectDB() {
-	dsn := "root:231792@tcp(127.0.0.1:3306)/backstage"
+	dsn := "root:231792@tcp(127.0.0.1:3306)/backstage?parseTime=true"
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
 		utils.SystemLogger.Error("连接配置错误：%v", err)

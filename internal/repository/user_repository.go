@@ -4,6 +4,7 @@ import (
 	"GoWork_7/internal/models"
 	"database/sql"
 	"errors"
+	"time"
 )
 
 var (
@@ -133,14 +134,25 @@ func (r *UserRepository) FetchWithPagination(page, limit int, keyword, status st
 	}
 	defer rows.Close()
 
-	var users []models.User
+	users := make([]models.User, 0)
 	for rows.Next() {
 		var u models.User
 		var statusStr string
 		var avatar sql.NullString
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.LastLogin, &statusStr, &avatar); err != nil {
+		var lastLoginStr sql.NullString
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &lastLoginStr, &statusStr, &avatar); err != nil {
+			// 如果扫描失败，记录错误并跳过
 			continue
 		}
+
+		// 处理 last_login (由于数据库字段是 VARCHAR，我们需要手动转换)
+		if lastLoginStr.Valid && lastLoginStr.String != "" {
+			t, err := time.Parse("2006-01-02 15:04:05", lastLoginStr.String)
+			if err == nil {
+				u.LastLogin = t
+			}
+		}
+
 		r.mapUserStatus(&u, statusStr, avatar)
 		users = append(users, u)
 	}

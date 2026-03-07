@@ -1,0 +1,411 @@
+basePath: /api
+definitions:
+  GoWork_7_internal_models.APIResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      success:
+        description: 必须添加，它是前后端的“生死线”
+        type: boolean
+    type: object
+  GoWork_7_internal_models.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  GoWork_7_internal_models.LoginResponse:
+    properties:
+      avatar:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      token:
+        type: string
+      username:
+        type: string
+    type: object
+  GoWork_7_internal_models.User:
+    properties:
+      avatar:
+        type: string
+      enable:
+        type: boolean
+      id:
+        type: integer
+      last_login:
+        type: string
+      password:
+        description: 敏感信息，返回时忽略
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8090
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 这是一个简单的用户管理系统 API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: GoWork_7 API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户通过用户名和密码进行登录，获取 Token 和用户信息
+      parameters:
+      - description: 登录请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/GoWork_7_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/GoWork_7_internal_models.LoginResponse'
+              type: object
+        "400":
+          description: 无效的请求参数
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "401":
+          description: 用户名或密码错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "403":
+          description: 账户已被禁用
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      summary: 用户登录
+      tags:
+      - 认证
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户提交用户名和密码进行注册
+      parameters:
+      - description: 注册请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/GoWork_7_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注册成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 无效的请求参数
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "405":
+          description: 方法不允许
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 注册失败
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      summary: 用户注册
+      tags:
+      - 认证
+  /uploads/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 通用头像上传接口
+      parameters:
+      - description: 头像文件
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 上传成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 文件过大或无效的文件类型
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: 通用头像上传
+      tags:
+      - 文件上传
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页、关键词和状态获取用户列表
+      parameters:
+      - description: 页码 (默认 1)
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量 (默认 10)
+        in: query
+        name: limit
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 用户状态
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "405":
+          description: 方法不允许
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取用户列表
+      tags:
+      - 用户管理
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建一个新的用户
+      parameters:
+      - description: 创建用户请求体
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 无效的请求参数
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "403":
+          description: 权限不足
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建新用户
+      tags:
+      - 用户管理
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 管理员删除指定用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 无效的用户ID
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "403":
+          description: 权限不足
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除用户
+      tags:
+      - 用户管理
+    put:
+      consumes:
+      - application/json
+      description: 管理员或用户本人修改用户信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新用户请求体
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/GoWork_7_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 修改成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/GoWork_7_internal_models.User'
+              type: object
+        "400":
+          description: 无效的用户ID或请求参数
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "403":
+          description: 权限不足
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "404":
+          description: 找不到用户
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: 修改用户信息
+      tags:
+      - 用户管理
+  /users/{id}/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传用户头像文件 (限制 2MB, 支持 jpg, png, jpeg, webp)
+      parameters:
+      - description: 用户ID (可选，若不提供则为通用上传)
+        in: path
+        name: id
+        type: integer
+      - description: 头像文件
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 上传成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 文件过大或无效的文件类型
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "403":
+          description: 权限不足
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/GoWork_7_internal_models.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: 上传头像
+      tags:
+      - 文件上传
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

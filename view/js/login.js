@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('user_id'  , userData.id || '');
                     localStorage.setItem('user_role', userData.role || '');
                     localStorage.setItem('user_name', userData.username || '');
+                    localStorage.setItem('user_avatar', userData.avatar || '');
 
                     // 【关键跳转】：确保路径正确
                     console.log("即将跳转至项目首页...");

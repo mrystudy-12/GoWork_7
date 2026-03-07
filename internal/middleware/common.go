@@ -2,18 +2,34 @@ package middleware
 
 import (
 	"GoWork_7/internal/utils"
-	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
 )
 
+// responseWriter 包装原有的 http.ResponseWriter 以记录状态码
+type responseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.status = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
 // Logging 日志中间件
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		next.ServeHTTP(w, r)
-		utils.AppLogger.Info("%s %s %s", r.Method, r.URL.Path, time.Since(start))
+
+		// 默认状态码为 200，因为如果没调用 WriteHeader，Go 默认返回 200
+		rw := &responseWriter{ResponseWriter: w, status: http.StatusOK}
+
+		next.ServeHTTP(rw, r)
+
+		duration := time.Since(start)
+		utils.AppLogger.Info("%d %s %s %s", rw.status, r.Method, r.URL.Path, duration)
 	})
 }
 

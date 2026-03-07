@@ -19,6 +19,17 @@ func NewLoginHandler(loginService *service.LoginService) *LoginHandler {
 }
 
 // Login 处理用户登录请求
+// @Summary 用户登录
+// @Description 用户通过用户名和密码进行登录，获取 Token 和用户信息
+// @Tags 认证
+// @Accept  json
+// @Produce  json
+// @Param   request  body      models.LoginRequest  true  "登录请求参数"
+// @Success 200 {object} models.APIResponse{data=models.LoginResponse} "登录成功"
+// @Failure 400 {object} models.APIResponse "无效的请求参数"
+// @Failure 401 {object} models.APIResponse "用户名或密码错误"
+// @Failure 403 {object} models.APIResponse "账户已被禁用"
+// @Router /auth/login [post]
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != http.MethodPost {
@@ -42,12 +53,11 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
-	utils.SuccessResponse(w, "登录成功", map[string]interface{}{
-		"token":    token,
-		"id":       user.ID,
-		"role":     user.Role,
-		"username": user.Username,
-		"avatar":   utils.FormatAvatarURL(r, user.Avatar),
+	utils.SuccessResponse(w, "登录成功", models.LoginResponse{
+		Token:    token,
+		ID:       user.ID,
+		Role:     user.Role,
+		Username: user.Username,
+		Avatar:   utils.FormatAvatarURL(r, user.Avatar),
 	})
 }

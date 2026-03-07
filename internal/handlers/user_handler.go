@@ -5,7 +5,6 @@ import (
 	"GoWork_7/internal/service"
 	"GoWork_7/internal/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -21,6 +20,20 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 }
 
 // GetAllUsers 获取所有用户列表（分页+搜索）
+// @Summary 获取用户列表
+// @Description 根据分页、关键词和状态获取用户列表
+// @Tags 用户管理
+// @Accept  json
+// @Produce  json
+// @Param   page     query    int     false  "页码 (默认 1)"
+// @Param   limit    query    int     false  "每页数量 (默认 10)"
+// @Param   keyword  query    string  false  "搜索关键词"
+// @Param   status   query    string  false  "用户状态"
+// @Success 200 {object} models.APIResponse{data=map[string]interface{}} "获取成功"
+// @Failure 405 {object} models.APIResponse "方法不允许"
+// @Failure 500 {object} models.APIResponse "服务器内部错误"
+// @Security BearerAuth
+// @Router /users [get]
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.ErrorResponse(w, http.StatusMethodNotAllowed, "Method Not Allowed")
@@ -58,6 +71,18 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewUser 创建新用户（仅管理员）
+// @Summary 创建新用户
+// @Description 管理员创建一个新的用户
+// @Tags 用户管理
+// @Accept  json
+// @Produce  json
+// @Param   request  body      object  true  "创建用户请求体"
+// @Success 200 {object} models.APIResponse{data=map[string]interface{}} "创建成功"
+// @Failure 400 {object} models.APIResponse "无效的请求参数"
+// @Failure 403 {object} models.APIResponse "权限不足"
+// @Failure 500 {object} models.APIResponse "服务器内部错误"
+// @Security BearerAuth
+// @Router /users [post]
 func (h *UserHandler) NewUser(w http.ResponseWriter, r *http.Request) {
 	role, _ := r.Context().Value("role").(string)
 	if role != "admin" {
@@ -84,6 +109,20 @@ func (h *UserHandler) NewUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // PutUser 修改用户信息 (RESTful: PUT /api/users/{id})
+// @Summary 修改用户信息
+// @Description 管理员或用户本人修改用户信息
+// @Tags 用户管理
+// @Accept  json
+// @Produce  json
+// @Param   id       path     int     true  "用户ID"
+// @Param   request  body      models.User  true  "更新用户请求体"
+// @Success 200 {object} models.APIResponse{data=models.User} "修改成功"
+// @Failure 400 {object} models.APIResponse "无效的用户ID或请求参数"
+// @Failure 403 {object} models.APIResponse "权限不足"
+// @Failure 404 {object} models.APIResponse "找不到用户"
+// @Failure 500 {object} models.APIResponse "服务器内部错误"
+// @Security BearerAuth
+// @Router /users/{id} [put]
 func (h *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
 	operatorRole, _ := r.Context().Value("role").(string)
 	operatorID, _ := r.Context().Value("userID").(int64)
@@ -134,6 +173,18 @@ func (h *UserHandler) PutUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteUser 删除用户 (RESTful: DELETE /api/users/{id})
+// @Summary 删除用户
+// @Description 管理员删除指定用户
+// @Tags 用户管理
+// @Accept  json
+// @Produce  json
+// @Param   id       path     int     true  "用户ID"
+// @Success 200 {object} models.APIResponse{data=map[string]interface{}} "删除成功"
+// @Failure 400 {object} models.APIResponse "无效的用户ID"
+// @Failure 403 {object} models.APIResponse "权限不足"
+// @Failure 500 {object} models.APIResponse "服务器内部错误"
+// @Security BearerAuth
+// @Router /users/{id} [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	role, _ := r.Context().Value("role").(string)
 	if role != "admin" {

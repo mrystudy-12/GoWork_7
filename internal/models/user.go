@@ -1,14 +1,25 @@
 package models
 
-// User 用户模型结构体
+import "time"
+
+// User 基础用户模型
 type User struct {
-	ID        int64  `json:"id"`
-	Username  string `json:"username"`
-	Password  string `json:"-"` // 关键：转 JSON 时隐藏密码
-	LastLogin string `json:"last_login"`
-	Role      string `json:"role"`
-	Enable    bool   `json:"enable"`
-	Avatar    string `json:"avatar,omitempty"`
+	ID        int64     `json:"id"`
+	Username  string    `json:"username"`
+	Password  string    `json:"password,omitempty"` // 敏感信息，返回时忽略
+	Role      string    `json:"role"`
+	LastLogin time.Time `json:"last_login"`
+	Enable    bool      `json:"enable"`
+	Avatar    string    `json:"avatar"`
+}
+
+// LoginResponse 登录成功后的响应数据结构
+type LoginResponse struct {
+	Token    string `json:"token"`
+	ID       int64  `json:"id"`
+	Role     string `json:"role"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
 }
 
 // LoginRequest 登录请求结构体

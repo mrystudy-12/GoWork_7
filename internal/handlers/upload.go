@@ -22,8 +22,34 @@ func NewUploadHandler(userService *service.UserService) *UploadHandler {
 	return &UploadHandler{userService: userService}
 }
 
+// UploadAvatarGeneric 仅用于生成通用上传接口的 Swagger 文档
+// @Summary 通用头像上传
+// @Description 通用头像上传接口
+// @Tags 文件上传
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param   avatar  formData file    true   "头像文件"
+// @Success 200 {object} models.APIResponse{data=map[string]interface{}} "上传成功"
+// @Failure 400 {object} models.APIResponse "文件过大或无效的文件类型"
+// @Failure 500 {object} models.APIResponse "服务器内部错误"
+// @Security BearerAuth
+// @Router /uploads/avatar [post]
+func (h *UploadHandler) UploadAvatarGeneric(w http.ResponseWriter, r *http.Request) {}
+
 // UploadAvatar 处理头像上传 (RESTful: POST /api/users/{id}/avatar 或 POST /api/uploads/avatar)
-// 实现逻辑：通过 ID 查询数据库获取用户名，生成 ID_用户名.扩展名 格式的文件名
+// @Summary 上传头像
+// @Description 上传用户头像文件 (限制 2MB, 支持 jpg, png, jpeg, webp)
+// @Tags 文件上传
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param   id      path     int     false  "用户ID (可选，若不提供则为通用上传)"
+// @Param   avatar  formData file    true   "头像文件"
+// @Success 200 {object} models.APIResponse{data=map[string]interface{}} "上传成功"
+// @Failure 400 {object} models.APIResponse "文件过大或无效的文件类型"
+// @Failure 403 {object} models.APIResponse "权限不足"
+// @Failure 500 {object} models.APIResponse "服务器内部错误"
+// @Security BearerAuth
+// @Router /users/{id}/avatar [post]
 func (h *UploadHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	// 1. 检查请求方法
 	if r.Method != http.MethodPost {

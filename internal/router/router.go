@@ -1,6 +1,7 @@
 package router
 
 import (
+	_ "GoWork_7/docs"
 	"GoWork_7/internal/database"
 	"GoWork_7/internal/handlers"
 	"GoWork_7/internal/middleware"
@@ -8,6 +9,7 @@ import (
 	"GoWork_7/internal/service"
 	"GoWork_7/internal/utils"
 	"fmt"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"html/template"
 	"net/http"
 	"strings"
@@ -67,6 +69,9 @@ func SetupRouter() http.Handler {
 	mux.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir("view/html"))))
 	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("view/js"))))
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("view/images"))))
+
+	// Swagger 文档
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// 公开页面与接口
 	mux.HandleFunc("/", welcome3)

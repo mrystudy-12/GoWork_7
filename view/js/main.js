@@ -7,6 +7,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 自动运行：为页面上所有带有 data-feather 属性的元素渲染图标
     initGlobalIcons();
+    
+    // 自动更新顶部导航的用户头像和用户名
+    updateHeaderUserInfo();
 });
 
 /**
@@ -19,6 +22,37 @@ function initGlobalIcons() {
     } else {
         console.warn('Feather 图标库尚未加载，请检查 HTML 中的脚本引入。');
     }
+}
+
+/**
+ * 3. 更新顶部导航用户信息
+ */
+function updateHeaderUserInfo() {
+    const userName = localStorage.getItem('user_name');
+    const userAvatar = localStorage.getItem('user_avatar');
+
+    // 添加调试日志，方便在控制台查看
+    console.log("【调试】顶部导航栏更新 (来自 main.js)：", {
+        userName: userName,
+        userAvatar: userAvatar
+    });
+
+    if (userName) {
+        const userNameElements = document.querySelectorAll('.user-name-display');
+        userNameElements.forEach(el => el.innerText = userName);
+    }
+
+    // 无论有没有头像，都进行处理
+    const userAvatarElements = document.querySelectorAll('.user-avatar-display');
+    userAvatarElements.forEach(el => {
+        if (userAvatar && userAvatar !== "") {
+            // 如果有真实头像，直接使用
+            el.src = userAvatar;
+        } else if (userName) {
+            // 如果没有头像但有用户名，生成一个字母头像
+            el.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random&size=128`;
+        }
+    });
 }
 
 
